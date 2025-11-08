@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+poetry.lock
+
+# Pulumi secrets/state
+Pulumi.*.yaml
+!Pulumi.yaml
+
+# Editor stuff
+.vscode/

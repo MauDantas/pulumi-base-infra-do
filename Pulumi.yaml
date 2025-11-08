@@ -1,0 +1,3 @@
+name: pulumi-base-infra-do
+runtime: python
+description: "DigitalOcean base infrastructure managed with Pulumi"
