@@ -1,0 +1,8 @@
+config:
+  vpc:env: <PUT YOUR ENV NAME HERE>
+  vpc:ip_range: <PUT YOUR IP RANGE HERE>
+  security:allowed_ssh_cidr: <PUT YOUR SSH CIDR HERE>
+  region: <PUT YOUR REGION HERE>
+  digitalocean:token:
+    secure: <PUT YOUR ENCRYPTED TOKEN HERE>
+encryptionsalt: v1:KgWwaatPMhs=:v1:/LcSCCuVkfeFMiHO:VYPkUA9wwOYlxUTXrCqyH1cnCbtA9g==

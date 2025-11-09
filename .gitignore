@@ -6,7 +6,10 @@ poetry.lock
 
 # Pulumi secrets/state
 Pulumi.*.yaml
+!Pulumi.template.yaml
 !Pulumi.yaml
 
 # Editor stuff
 .vscode/
+
+.env
