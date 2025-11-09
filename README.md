@@ -40,6 +40,18 @@ pulumi stack init YOUR_PULUMI_YAML
    ```bash
 aws s3 cp Pulumi.YOUR_STACK_NAME.yaml s3://YOUR_BUCKET_NAME/states/
    ```
+
+# If you want to copy my Actions Workflow
+```bash
+PULUMI_ACCESS_TOKEN= file://$HOME/.pulumi
+PULUMI_CONFIG_PASSPHRASE=YOUR_PASSPHRASE
+AWS_ACCESS_KEY_ID=YOUR_S3_LIKE_ACCESS_KEY
+AWS_SECRET_ACCESS_KEY=YOUR_S3_LIKE_SECRET_ACCESS_KEY
+AWS_REGION=YOUR_S3_REGION
+AWS_S3_FORCE_PATH_STYLE: true
+AWS_ENDPOINT_URL_S3=YOUR_S3_LIKE_URL
+```
+
 ## If you are new to poetry Pack Management
 
 - Poetry shell to isolate your environment (Using venv behind the scenes)
