@@ -41,17 +41,6 @@ jobs:
         env:
           PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
 
-      - name: Configure Agnostic S3 
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_S3_FORCE_PATH_STYLE: true
-          AWS_ENDPOINT_URL_S3: ${{ secrets.AWS_ENDPOINT_URL_S3 }}
-        run: |
-          export PATH=$PATH:$HOME/.pulumi/bin
-          pulumi login s3://pulumi-infrastructure
-
       - name: Pulumi Preview
         run: |
           poetry run pulumi preview --stack staging
