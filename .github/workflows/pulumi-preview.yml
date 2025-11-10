@@ -34,6 +34,13 @@ jobs:
         env:
           PULUMI_SKIP_UPDATE_CHECK: "true"
 
+      - name: Configure Pulumi stack values
+        run: |
+          pulumi config set region ${{ secrets.DIGITAL_OCEAN_REGION }} --stack staging
+          pulumi config set vpc:env staging --stack staging
+          pulumi config set vpc:ip_range ${{ secrets.DIGITAL_PRIVATE_NETWORK }} --stack staging
+          pulumi config set security:allowed_ssh_cidr ${{ secrets.DIGITAL_PRIVATE_NETWORK }} --stack staging
+
       - name: Initialize local Pulumi backend
         run: |
           pulumi login file://$HOME/.pulumi
