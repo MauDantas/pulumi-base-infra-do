@@ -34,6 +34,13 @@ jobs:
         env:
           PULUMI_SKIP_UPDATE_CHECK: "true"
 
+      - name: Initialize local Pulumi backend
+        run: |
+          pulumi login file://$HOME/.pulumi
+          pulumi stack select staging || pulumi stack init staging
+        env:
+          PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
+
       - name: Configure Agnostic S3 
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -46,13 +53,19 @@ jobs:
           pulumi login s3://pulumi-infrastructure
 
       - name: Pulumi Preview
+        run: |
+          poetry run pulumi preview --stack staging
         env:
           PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
+
+      - name: Sync Pulumi state to Agnostic S3
+        run: |
+          sudo apt-get update && sudo apt-get install -y awscli
+          aws s3 cp $HOME/.pulumi/stacks/ s3://pulumi-infrastructure/states/ \
+            --recursive --endpoint-url $AWS_ENDPOINT_URL_S3
+        env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_S3_FORCE_PATH_STYLE: true
           AWS_ENDPOINT_URL_S3: ${{ secrets.AWS_ENDPOINT_URL_S3 }}
-        run: |
-          export PATH=$PATH:$HOME/.pulumi/bin
-          poetry run pulumi preview --stack staging
