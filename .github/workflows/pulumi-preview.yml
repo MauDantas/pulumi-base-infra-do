@@ -40,6 +40,7 @@ jobs:
           pulumi config set vpc:env staging --stack staging
           pulumi config set vpc:ip_range ${{ secrets.DIGITAL_PRIVATE_NETWORK }} --stack staging
           pulumi config set security:allowed_ssh_cidr ${{ secrets.DIGITAL_PRIVATE_NETWORK }} --stack staging
+          pulumi config set digitalocean:token --secret ${{ secrets.DIGITAL_OCEAN_TOKEN }} --stack staging
 
       - name: Initialize local Pulumi backend
         run: |
