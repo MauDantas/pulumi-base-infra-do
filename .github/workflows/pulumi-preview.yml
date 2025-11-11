@@ -61,7 +61,9 @@ jobs:
 
       - name: Sync Pulumi state to Agnostic S3
         run: |
-          sudo apt-get update && sudo apt-get install -y awscli
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip -q awscliv2.zip
+          sudo ./aws/install
           aws s3 cp $HOME/.pulumi/stacks/ s3://pulumi-infrastructure/states/ \
             --recursive --endpoint-url $AWS_ENDPOINT_URL_S3
         env:
