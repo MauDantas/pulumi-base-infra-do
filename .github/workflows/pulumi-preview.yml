@@ -30,9 +30,18 @@ jobs:
         run: poetry install --no-root
 
       - name: Install Pulumi CLI
-        run: curl -fsSL https://get.pulumi.com | sh
+        run: |
+          curl -fsSL https://get.pulumi.com | sh
+          echo "$HOME/.pulumi/bin" >> $GITHUB_PATH
         env:
           PULUMI_SKIP_UPDATE_CHECK: "true"
+      
+      - name: Initialize local Pulumi backend
+        run: |
+          pulumi login file://$HOME/.pulumi
+          pulumi stack select staging || pulumi stack init staging
+        env:
+          PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
 
       - name: Configure Pulumi stack values
         run: |
@@ -41,13 +50,6 @@ jobs:
           pulumi config set vpc:ip_range ${{ secrets.DIGITAL_PRIVATE_NETWORK }} --stack staging
           pulumi config set security:allowed_ssh_cidr ${{ secrets.DIGITAL_PRIVATE_NETWORK }} --stack staging
           pulumi config set digitalocean:token --secret ${{ secrets.DIGITAL_OCEAN_TOKEN }} --stack staging
-
-      - name: Initialize local Pulumi backend
-        run: |
-          pulumi login file://$HOME/.pulumi
-          pulumi stack select staging || pulumi stack init staging
-        env:
-          PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
 
       - name: Pulumi Preview
         run: |
