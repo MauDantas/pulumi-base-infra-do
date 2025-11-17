@@ -39,6 +39,10 @@ jobs:
       - name: Verify and Initialize DYI Backend
         env:
           SPACES_ENDPOINT_URL: ${{ secrets.SPACES_ENDPOINT_URL }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.SPACES_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.SPACES_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_S3_FORCE_PATH_STYLE: true
         shell: bash
         run: |
           # Use aws s3api head-object to reliably check if the file exists.
@@ -53,11 +57,7 @@ jobs:
             # If 'meta.yaml' is missing, you can add initialization steps here,
             # or the rest of your workflow (e.g., 'pulumi login') will handle it.
           fi
-          env:
-            AWS_ACCESS_KEY_ID: ${{ secrets.SPACES_ACCESS_KEY_ID }}
-            AWS_SECRET_ACCESS_KEY: ${{ secrets.SPACES_SECRET_ACCESS_KEY }}
-            AWS_REGION: ${{ secrets.AWS_REGION }}
-            AWS_S3_FORCE_PATH_STYLE: true
+
 
 #      - name: Configure Pulumi stack values
 #        env:
