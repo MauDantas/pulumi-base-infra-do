@@ -36,52 +36,55 @@ jobs:
         env:
           PULUMI_SKIP_UPDATE_CHECK: "true"
       
-      - name: Verify and Initialize DYI Backend
+      - name: Verify and prepare DYI Backend
         env:
           SPACES_ENDPOINT_URL: ${{ secrets.SPACES_ENDPOINT_URL }}
           AWS_ACCESS_KEY_ID: ${{ secrets.SPACES_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.SPACES_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_S3_FORCE_PATH_STYLE: true
+          SPACES_ENDPOINT_HEADLESS_URL: $(echo "${{ secrets.SPACES_ENDPOINT_URL }}" | sed -E 's/^https?:\/\///')
+
         shell: bash
         run: |
-          # Use aws s3api head-object to reliably check if the file exists.
           if aws s3api head-object \
             --bucket ${{ secrets.BUCKET_NAME }} \
             --key pulumi-state/.pulumi/meta.yaml \
             --endpoint-url "$SPACES_ENDPOINT_URL" > /dev/null 2>&1
           then
             echo "✅ Pulumi Remote Backend (meta.yaml) found."
+            pulumi login "s3://${{ secrets.BUCKET_NAME }}/pulumi-state?endpoint=${{ secrets.SPACES_ENDPOINT_HEADLESS_URL }}&s3ForcePathStyle=true&region=us-east-1"
+            echo "✅ Pulumi login to remote succeeded."
+
           else
-            echo "The remote backend config is not done. Proceeding to initialize."
-            # If 'meta.yaml' is missing, you can add initialization steps here,
-            # or the rest of your workflow (e.g., 'pulumi login') will handle it.
+            cat <<EOF > meta.yaml
+            version: 1
+            current: null
+            EOF
+            aws s3api put-object \
+              --bucket base-infra-bucket \
+              --key pulumi-state/.pulumi/meta.yaml \
+              --body meta.yaml \
+              --endpoint-url "$SPACES_ENDPOINT_URL"
+            echo "✅ Pulumi Remote Backend (meta.yaml) created."
+            pulumi login "s3://${{ secrets.BUCKET_NAME }}/pulumi-state?endpoint=${{ secrets.SPACES_ENDPOINT_HEADLESS_URL }}&s3ForcePathStyle=true&region=us-east-1"
+            echo "✅ Pulumi login to remote succeeded."
           fi
 
+      - name: Configure Pulumi stack for staging environment
+        env:
+          PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
+        run: |
+          pulumi config set region ${{ secrets.DIGITAL_OCEAN_REGION }} --stack staging
+          pulumi config set vpc:env staging --stack staging
+          pulumi config set vpc:ip_range ${{ secrets.DIGITAL_PRIVATE_NETWORK }} --stack staging
+          pulumi config set security:allowed_ssh_cidr ${{ secrets.DIGITAL_PRIVATE_NETWORK }} --stack staging
+          pulumi config set digitalocean:token --secret ${{ secrets.DIGITAL_OCEAN_TOKEN }} --stack staging
 
-#      - name: Configure Pulumi stack values
-#        env:
-#          PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
-#        run: |
-#          pulumi config set region ${{ secrets.DIGITAL_OCEAN_REGION }} --stack staging
-#          pulumi config set vpc:env staging --stack staging
-#          pulumi config set vpc:ip_range ${{ secrets.DIGITAL_PRIVATE_NETWORK }} --stack staging
-#          pulumi config set security:allowed_ssh_cidr ${{ secrets.DIGITAL_PRIVATE_NETWORK }} --stack staging
-#          pulumi config set digitalocean:token --secret ${{ secrets.DIGITAL_OCEAN_TOKEN }} --stack staging
-#
-#      - name: Pulumi Preview
-#        run: |
-#          poetry run pulumi preview --stack staging
-#        env:
-#          PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
-#
-#      - name: Sync Pulumi state to Agnostic S3
-#        run: |
-#          aws s3 cp $HOME/.pulumi/stacks/ s3://pulumi-infrastructure/states/ \
-#            --recursive --endpoint-url $AWS_ENDPOINT_URL_S3
-#        env:
-#          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#          AWS_REGION: ${{ secrets.AWS_REGION }}
-#          AWS_S3_FORCE_PATH_STYLE: true
-#          AWS_ENDPOINT_URL_S3: ${{ secrets.AWS_ENDPOINT_URL_S3 }}
+      - name: Pulumi Preview
+        run: |
+          poetry run pulumi preview --stack staging
+        env:
+          PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
+
+

@@ -38,6 +38,9 @@ pulumi login file://$HOME/.pulumi
 pulumi stack init YOUR_PULUMI_YAML
 ```
 
+**If you gonna set up a remote State**
+Give it a look at my personalized DIY repository. Basically, anything that is not AWS, Azure or GCP needs a "empty" meta file there so. If you do that you will be OK.
+
 **Sync local Pulumi state to S3**
 
    ```bash
@@ -46,7 +49,7 @@ aws s3 cp Pulumi.YOUR_STACK_NAME.yaml s3://YOUR_BUCKET_NAME/states/
 
 # If you want to copy my Actions Workflow
 ```bash
-PULUMI_ACCESS_TOKEN= file://$HOME/.pulumi
+PULUMI_ACCESS_TOKEN= 
 PULUMI_CONFIG_PASSPHRASE=YOUR_PASSPHRASE
 DIGITAL_OCEAN_REGION=YOUR_REGION
 DIGITAL_PRIVATE_NETWORK=YOUR_PRIVATE_NETWORK
