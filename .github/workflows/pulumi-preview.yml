@@ -35,41 +35,53 @@ jobs:
           echo "$HOME/.pulumi/bin" >> $GITHUB_PATH
         env:
           PULUMI_SKIP_UPDATE_CHECK: "true"
-      
-      - name: Verify and prepare DYI Backend
+
+      - name: Verify and prepare DIY Backend
         env:
           SPACES_ENDPOINT_URL: ${{ secrets.SPACES_ENDPOINT_URL }}
           AWS_ACCESS_KEY_ID: ${{ secrets.SPACES_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.SPACES_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_S3_FORCE_PATH_STYLE: true
-          SPACES_ENDPOINT_HEADLESS_URL: $(echo "${{ secrets.SPACES_ENDPOINT_URL }}" | sed -E 's/^https?:\/\///')
-
+          BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
+          SPACES_ENDPOINT_HEADLESS_URL: ${{ secrets.SPACES_ENDPOINT_URL }} # replaced below in run block
+        
         shell: bash
         run: |
+          # Remove https:// prefix from endpoint
+          SPACES_ENDPOINT_HEADLESS_URL=$(echo "$SPACES_ENDPOINT_URL" | sed -E 's/^https?:\/\///')
+        
+          # Check if meta.yaml exists
           if aws s3api head-object \
-            --bucket ${{ secrets.BUCKET_NAME }} \
+            --bucket "$BUCKET_NAME" \
             --key pulumi-state/.pulumi/meta.yaml \
-            --endpoint-url "$SPACES_ENDPOINT_URL" > /dev/null 2>&1
-          then
+            --endpoint-url "$SPACES_ENDPOINT_URL" > /dev/null 2>&1; then
+
             echo "✅ Pulumi Remote Backend (meta.yaml) found."
-            pulumi login "s3://${{ secrets.BUCKET_NAME }}/pulumi-state?endpoint=${{ secrets.SPACES_ENDPOINT_HEADLESS_URL }}&s3ForcePathStyle=true&region=us-east-1"
-            echo "✅ Pulumi login to remote succeeded."
 
           else
-            cat <<EOF > meta.yaml
-            version: 1
-            current: null
-            EOF
+            echo "🛠 Creating Pulumi Remote Backend (meta.yaml)..."
+        
+            # Create meta.yaml locally
+          cat <<EOF > meta.yaml
+          version: 1
+          current: null
+          EOF
+        
+            # Upload meta.yaml
             aws s3api put-object \
-              --bucket base-infra-bucket \
+              --bucket "$BUCKET_NAME" \
               --key pulumi-state/.pulumi/meta.yaml \
               --body meta.yaml \
               --endpoint-url "$SPACES_ENDPOINT_URL"
+        
             echo "✅ Pulumi Remote Backend (meta.yaml) created."
-            pulumi login "s3://${{ secrets.BUCKET_NAME }}/pulumi-state?endpoint=${{ secrets.SPACES_ENDPOINT_HEADLESS_URL }}&s3ForcePathStyle=true&region=us-east-1"
-            echo "✅ Pulumi login to remote succeeded."
           fi
+        
+          # Pulumi login to DIY backend (DO Spaces)
+          pulumi login "s3://$BUCKET_NAME/pulumi-state?endpoint=$SPACES_ENDPOINT_HEADLESS_URL&s3ForcePathStyle=true&region=us-east-1"
+          echo "✅ Pulumi login to remote succeeded."
+
 
       - name: Configure Pulumi stack for staging environment
         env:
