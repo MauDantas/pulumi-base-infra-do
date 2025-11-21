@@ -1,4 +1,4 @@
-name: Base Infratructure CI/CD Apply
+name: Pulumi Preview
 
 on:
   workflow_dispatch:
@@ -7,8 +7,8 @@ on:
       - main
 
 jobs:
-  setup:
-    if: github.event_name == 'workflow_dispatch' && github.actor == 'MauDantas' 
+  pulumi-preview:
+    if: github.actor == 'MauDantas'
     runs-on: ubuntu-latest
 
     permissions:
@@ -35,10 +35,6 @@ jobs:
           echo "$HOME/.pulumi/bin" >> $GITHUB_PATH
         env:
           PULUMI_SKIP_UPDATE_CHECK: "true"
-      
-      - name: Detect Pulumi
-        id: detect-pulumi
-        run: echo "path=$HOME/.pulumi/bin" >> $GITHUB_OUTPUT
 
       - name: Verify and prepare DIY Backend
         env:
@@ -87,11 +83,15 @@ jobs:
           poetry run pulumi login "s3://$BUCKET_NAME/pulumi-state?endpoint=$SPACES_ENDPOINT_HEADLESS_URL&s3ForcePathStyle=true&region=us-east-1"
           echo "✅ Pulumi login to remote succeeded."
 
-      - name: Pulumi Apply
+      - name: Pulumi Preview
+        run: |
+          poetry run pulumi preview --stack staging
         env:
           PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
-        run: |
-          export PATH="$HOME/.pulumi/bin:$PATH"
-          poetry run pulumi up --stack staging --yes
-
+          AWS_ACCESS_KEY_ID: ${{ secrets.SPACES_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.SPACES_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_S3_FORCE_PATH_STYLE: true
+          SPACES_ENDPOINT_URL: ${{ secrets.SPACES_ENDPOINT_URL }}
+          BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
 

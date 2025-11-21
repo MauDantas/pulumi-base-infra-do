@@ -1,14 +1,11 @@
-name: Base Infratructure CI/CD Apply
+name: Base Infrastructure CI/CD Destroy
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
 jobs:
-  setup:
-    if: github.event_name == 'workflow_dispatch' && github.actor == 'MauDantas' 
+  destroy:
+    if: github.actor == 'MauDantas'
     runs-on: ubuntu-latest
 
     permissions:
@@ -35,10 +32,6 @@ jobs:
           echo "$HOME/.pulumi/bin" >> $GITHUB_PATH
         env:
           PULUMI_SKIP_UPDATE_CHECK: "true"
-      
-      - name: Detect Pulumi
-        id: detect-pulumi
-        run: echo "path=$HOME/.pulumi/bin" >> $GITHUB_OUTPUT
 
       - name: Verify and prepare DIY Backend
         env:
@@ -48,50 +41,28 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_S3_FORCE_PATH_STYLE: true
           BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
-        
+
         shell: bash
         run: |
-          # Remove https:// prefix from endpoint
           SPACES_ENDPOINT_HEADLESS_URL=$(echo "$SPACES_ENDPOINT_URL" | sed -E 's/^https?:\/\///')
-          
           export PATH="$HOME/.pulumi/bin:$PATH"
-        
-          # Check if meta.yaml exists
+
           if aws s3api head-object \
             --bucket "$BUCKET_NAME" \
             --key pulumi-state/.pulumi/meta.yaml \
             --endpoint-url "$SPACES_ENDPOINT_URL" > /dev/null 2>&1; then
-
-            echo "✅ Pulumi Remote Backend (meta.yaml) found."
-
+            echo "✅ Pulumi Remote Backend exists."
           else
-            echo "🛠 Creating Pulumi Remote Backend (meta.yaml)..."
-        
-            # Create meta.yaml locally
-          cat <<EOF > meta.yaml
-          version: 1
-          current: null
-          EOF
-                  
-            # Upload meta.yaml
-            aws s3api put-object \
-              --bucket "$BUCKET_NAME" \
-              --key pulumi-state/.pulumi/meta.yaml \
-              --body meta.yaml \
-              --endpoint-url "$SPACES_ENDPOINT_URL"
-        
-            echo "✅ Pulumi Remote Backend (meta.yaml) created."
+            echo "❌ ERRO: Backend não inicializado. Rode o pipeline de preview/apply primeiro."
+            exit 1
           fi
-        
-          # Pulumi login to DIY backend (DO Spaces)
-          poetry run pulumi login "s3://$BUCKET_NAME/pulumi-state?endpoint=$SPACES_ENDPOINT_HEADLESS_URL&s3ForcePathStyle=true&region=us-east-1"
-          echo "✅ Pulumi login to remote succeeded."
 
-      - name: Pulumi Apply
+          poetry run pulumi login "s3://$BUCKET_NAME/pulumi-state?endpoint=$SPACES_ENDPOINT_HEADLESS_URL&s3ForcePathStyle=true&region=us-east-1"
+          echo "🔐 Pulumi login OK."
+
+      - name: Pulumi Destroy
         env:
           PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
         run: |
           export PATH="$HOME/.pulumi/bin:$PATH"
-          poetry run pulumi up --stack staging --yes
-
-
+          poetry run pulumi destroy --stack staging --yes
