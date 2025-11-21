@@ -82,9 +82,13 @@ jobs:
           # Pulumi login to DIY backend (DO Spaces)
           pulumi login "s3://$BUCKET_NAME/pulumi-state?endpoint=$SPACES_ENDPOINT_HEADLESS_URL&s3ForcePathStyle=true&region=us-east-1"
           echo "✅ Pulumi login to remote succeeded."
+          which pulumi
+          pulumi whoami
 
       - name: Pulumi Preview
         run: |
+          which pulumi
+          pulumi whoami
           poetry run pulumi preview --stack staging
         env:
           PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
