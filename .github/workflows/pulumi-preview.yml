@@ -63,10 +63,10 @@ jobs:
         
             # Create meta.yaml locally
           cat <<EOF > meta.yaml
-version: 1
-current: null
-EOF
-        
+          version: 1
+          current: null
+          EOF
+                  
             # Upload meta.yaml
             aws s3api put-object \
               --bucket "$BUCKET_NAME" \
