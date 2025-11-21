@@ -7,7 +7,7 @@ on:
       - main
 
 jobs:
-  pulumi-preview:
+  setup:
     if: github.actor == 'MauDantas'
     runs-on: ubuntu-latest
 
@@ -35,6 +35,10 @@ jobs:
           echo "$HOME/.pulumi/bin" >> $GITHUB_PATH
         env:
           PULUMI_SKIP_UPDATE_CHECK: "true"
+      
+      - name: Detect Pulumi
+        id: detect-pulumi
+        run: echo "path=$HOME/.pulumi/bin" >> $GITHUB_OUTPUT
 
       - name: Verify and prepare DIY Backend
         env:
@@ -80,20 +84,45 @@ jobs:
           fi
         
           # Pulumi login to DIY backend (DO Spaces)
-          poetry run pulumi login "s3://$BUCKET_NAME/pulumi-state?endpoint=$SPACES_ENDPOINT_HEADLESS_URL&s3ForcePathStyle=true&region=us-east-1"
+          pulumi login "s3://$BUCKET_NAME/pulumi-state?endpoint=$SPACES_ENDPOINT_HEADLESS_URL&s3ForcePathStyle=true&region=us-east-1"
           echo "✅ Pulumi login to remote succeeded."
-          poetry run which pulumi
-          poetry run pulumi whoami
-
+  
+  preview:
+    needs: setup
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.actor == 'MauDantas'
+    steps:
+      - uses: actions/checkout@v4
       - name: Pulumi Preview
-        run: |
-          poetry run pulumi preview --stack staging
         env:
           PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.SPACES_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.SPACES_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_S3_FORCE_PATH_STYLE: true
-          SPACES_ENDPOINT_URL: ${{ secrets.SPACES_ENDPOINT_URL }}
-          BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
+        run: |
+          export PATH="$HOME/.pulumi/bin:$PATH"
+          poetry run pulumi preview --stack staging
+  
+  apply:
+    needs: setup
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.actor == 'MauDantas'
+    steps:
+      - uses: actions/checkout@v4
 
+      - name: Pulumi Apply
+        env:
+          PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
+        run: |
+          export PATH="$HOME/.pulumi/bin:$PATH"
+          poetry run pulumi up --stack staging --yes
+
+  destroy:
+    needs: setup
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.actor == 'MauDantas'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pulumi Destroy
+        env:
+          PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
+        run: |
+          export PATH="$HOME/.pulumi/bin:$PATH"
+          poetry run pulumi destroy --stack staging --yes
