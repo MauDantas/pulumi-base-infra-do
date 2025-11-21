@@ -2,9 +2,6 @@ name: Base Infratructure CI/CD Apply
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
 jobs:
   setup:
