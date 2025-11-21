@@ -1,5 +1,5 @@
 config:
   digitalocean:token:
-    secure: v1:dO6jPv9Rt3vWZBgz:FO7/lmg081+nJa6HjkvYMgQ3jD4obrTUGtJRVg6ZitKcHwmio4asDNpAHApTwwDvBkJo0lPtMNmX8TwEM/+YoCS0P2Zfhs8ie9fW4Ah9qE086RTQOxPA
+    secure: v1:AJGyBkG+Eh3lMpwo:9bcwtOiykIi1bFoghx9MNJx4ImrRJJbnMDJ3T3aI/bd5GbJhtAVUMUyHnnBMrdhFnVJp5KReSc3UCtNKc73QEsFPxSGpEV4Kj0HLLSKBKzy51BZugdUS
   vpc:env: staging
 encryptionsalt: v1:6jGCunoQuPs=:v1:oo32CnzuJRiNcJGY:StokBiKwdu59IWd1ng9gZSYX8k2OVg==
