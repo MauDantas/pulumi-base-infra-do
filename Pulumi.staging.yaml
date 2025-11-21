@@ -1,0 +1,12 @@
+config:
+  vpc:env:
+    secure: v1:c8mLkKzS3WTsC95t:UDHnZxIdhLCxzvZ3XxqcHanfc05ERao=
+  vpc:ip_range:
+    secure: v1:ciGQf1IfkcYh1fpG:uf8auk2xSBVftOuj8o2jLO9ONuiQb1WSDU4CbA==
+  security:allowed_ssh_cidr:
+    secure: v1:Uz88Y4SdLwqILnM/:uAKsJpW7SRfqSYbcXuuzaQ2Ro/xxlLvio1y5HQ==
+  digitalocean:token:
+    secure: v1:dO6jPv9Rt3vWZBgz:FO7/lmg081+nJa6HjkvYMgQ3jD4obrTUGtJRVg6ZitKcHwmio4asDNpAHApTwwDvBkJo0lPtMNmX8TwEM/+YoCS0P2Zfhs8ie9fW4Ah9qE086RTQOxPA
+  pulumi-base-infra-do:region:
+    secure: v1:Nh7JwElBkYSm9xFR:J2iqQp3vGZtadyUjEaZv4asElt4=
+encryptionsalt: v1:6jGCunoQuPs=:v1:oo32CnzuJRiNcJGY:StokBiKwdu59IWd1ng9gZSYX8k2OVg==

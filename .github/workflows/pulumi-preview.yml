@@ -44,7 +44,6 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           AWS_S3_FORCE_PATH_STYLE: true
           BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
-          SPACES_ENDPOINT_HEADLESS_URL: ${{ secrets.SPACES_ENDPOINT_URL }} # replaced below in run block
         
         shell: bash
         run: |
@@ -64,9 +63,9 @@ jobs:
         
             # Create meta.yaml locally
           cat <<EOF > meta.yaml
-          version: 1
-          current: null
-          EOF
+version: 1
+current: null
+EOF
         
             # Upload meta.yaml
             aws s3api put-object \
@@ -81,17 +80,6 @@ jobs:
           # Pulumi login to DIY backend (DO Spaces)
           pulumi login "s3://$BUCKET_NAME/pulumi-state?endpoint=$SPACES_ENDPOINT_HEADLESS_URL&s3ForcePathStyle=true&region=us-east-1"
           echo "✅ Pulumi login to remote succeeded."
-
-
-      - name: Configure Pulumi stack for staging environment
-        env:
-          PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
-        run: |
-          pulumi config set region ${{ secrets.DIGITAL_OCEAN_REGION }} --stack staging
-          pulumi config set vpc:env staging --stack staging
-          pulumi config set vpc:ip_range ${{ secrets.DIGITAL_PRIVATE_NETWORK }} --stack staging
-          pulumi config set security:allowed_ssh_cidr ${{ secrets.DIGITAL_PRIVATE_NETWORK }} --stack staging
-          pulumi config set digitalocean:token --secret ${{ secrets.DIGITAL_OCEAN_TOKEN }} --stack staging
 
       - name: Pulumi Preview
         run: |

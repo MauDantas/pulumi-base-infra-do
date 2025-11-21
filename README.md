@@ -1,5 +1,5 @@
 # Base Infrastructure on Digital Ocean Using Pulumi
-Prove of Concept of Continuos Deploy with Pulumi via Digital Ocean. Pulumi.template.yaml file have instructions on how you should set your configuration file.
+Prove of Concept of Continuos Deploy with Pulumi via Digital Ocean. This repository consists on creating basic infrastructure for the cloud like general purpose firewalls, VPCs, S3 buckets and other infrastructure which Digital Ocean supports. Pulumi.template.yaml file have instructions on how you should set your configuration file.
 
 # If you are new to Pulumi
 
