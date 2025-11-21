@@ -83,6 +83,14 @@ jobs:
           poetry run pulumi login "s3://$BUCKET_NAME/pulumi-state?endpoint=$SPACES_ENDPOINT_HEADLESS_URL&s3ForcePathStyle=true&region=us-east-1"
           echo "✅ Pulumi login to remote succeeded."
 
+      - name: Set Pulumi Configuration
+        env:
+          PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
+        run: |
+          poetry run pulumi config set pulumi-base-infra-do:region ${{ secrets.DIGITAL_OCEAN_REGION }} --stack staging
+          poetry run pulumi config set vpc:ip_range ${{ secrets.DIGITAL_PRIVATE_NETWORK }} --stack staging
+          poetry run pulumi config set security:allowed_ssh_cidr ${{ secrets.DIGITAL_PRIVATE_NETWORK }} --stack staging
+
       - name: Pulumi Preview
         run: |
           poetry run pulumi preview --stack staging
