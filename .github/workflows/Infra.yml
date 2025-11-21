@@ -98,7 +98,8 @@ jobs:
           poetry run pulumi config set pulumi-base-infra-do:region ${{ secrets.DIGITAL_OCEAN_REGION }} --stack staging
           poetry run pulumi config set vpc:ip_range ${{ secrets.DIGITAL_PRIVATE_NETWORK }} --stack staging
           poetry run pulumi config set security:allowed_ssh_cidr ${{ secrets.DIGITAL_PRIVATE_NETWORK }} --stack staging
-                
+          pulumi config set digitalocean:token ${{ secrets.DIGITAL_OCEAN_TOKEN }} --secret --stack staging
+
       - name: Pulumi Apply
         env:
           PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
