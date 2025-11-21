@@ -49,6 +49,8 @@ jobs:
         run: |
           # Remove https:// prefix from endpoint
           SPACES_ENDPOINT_HEADLESS_URL=$(echo "$SPACES_ENDPOINT_URL" | sed -E 's/^https?:\/\///')
+          
+          export PATH="$HOME/.pulumi/bin:$PATH"
         
           # Check if meta.yaml exists
           if aws s3api head-object \
