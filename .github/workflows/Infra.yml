@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  setup:
+  pulumi-apply:
     if: github.event_name == 'workflow_dispatch' && github.actor == 'MauDantas' 
     runs-on: ubuntu-latest
 
