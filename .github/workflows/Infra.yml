@@ -1,4 +1,4 @@
-name: Pulumi Preview
+name: Base Infratructure CI/CD
 
 on:
   workflow_dispatch:
@@ -84,7 +84,7 @@ jobs:
           fi
         
           # Pulumi login to DIY backend (DO Spaces)
-          pulumi login "s3://$BUCKET_NAME/pulumi-state?endpoint=$SPACES_ENDPOINT_HEADLESS_URL&s3ForcePathStyle=true&region=us-east-1"
+          poetry run pulumi login "s3://$BUCKET_NAME/pulumi-state?endpoint=$SPACES_ENDPOINT_HEADLESS_URL&s3ForcePathStyle=true&region=us-east-1"
           echo "✅ Pulumi login to remote succeeded."
   
   preview:
